@@ -7,228 +7,150 @@ import {
   Image,
   ActivityIndicator,
   StyleSheet,
-  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 
 const MyRecipeScreen = () => {
   const navigation = useNavigation();
-
-  const [recipes, setrecipes] = useState([]);
+  const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch recipes from AsyncStorage
-  const fetchrecipes = async () => {
+  // Fetch saved recipes
+  const fetchRecipes = async () => {
     try {
-      const storedRecipes = await AsyncStorage.getItem("customrecipes");
-      if (storedRecipes) {
-        setrecipes(JSON.parse(storedRecipes));
-      } else {
-        setrecipes([]);
-      }
+      const stored = await AsyncStorage.getItem("customrecipes");
+      const parsed = stored ? JSON.parse(stored) : [];
+      setRecipes(parsed);
     } catch (error) {
-      console.error("Error fetching recipes:", error);
+      console.error("Error loading recipes:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchrecipes();
-  }, []);
+    const unsubscribe = navigation.addListener("focus", fetchRecipes);
+    return unsubscribe;
+  }, [navigation]);
 
-  // Handle recipe card press - view recipe details
-  const handlerecipeClick = (recipe) => {
-    navigation.navigate("CustomRecipesScreen", { recipe });
-  };
-
-  // Handle add new recipe button press
-  const handleAddrecipe = () => {
-    navigation.navigate("RecipesFormScreen");
-  };
-
-  // Edit existing recipe
-  const editrecipe = (recipe, index) => {
+  // Handle edit
+  const editRecipe = (recipe, index) => {
     navigation.navigate("RecipesFormScreen", {
       recipeToEdit: recipe,
       recipeIndex: index,
-      // Optionally, you can pass a callback here to refresh or update list after editing
     });
   };
 
-  // Delete recipe from list and AsyncStorage
-  const deleterecipe = async (index) => {
-    const confirmed = true; // Simulate confirmation
-    if (confirmed) {
-      const updatedrecipes = [...recipes];
-      updatedrecipes.splice(index, 1);
-      await AsyncStorage.setItem("customrecipes", JSON.stringify(updatedrecipes));
-      setrecipes(updatedrecipes);
+  // Delete without Alert (for now)
+  const deleteRecipe = async (index) => {
+    try {
+      const updated = [...recipes];
+      updated.splice(index, 1);
+      await AsyncStorage.setItem("customrecipes", JSON.stringify(updated));
+      setRecipes(updated);
+    } catch (err) {
+      console.error("Failed to delete:", err);
     }
   };
 
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#3498db" />
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header & Add Recipe Button */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Recipes</Text>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddrecipe}>
-          <Text style={styles.addButtonText}>Add New Recipe</Text>
-        </TouchableOpacity>
-      </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("RecipesFormScreen")}>
+        <Text style={styles.addButtonText}>Add Recipe</Text>
+      </TouchableOpacity>
 
-      {recipes.length === 0 ? (
-        <View style={styles.centered}>
-          <Text>No recipes found. Add your first recipe!</Text>
+      {recipes.map((recipe, index) => (
+        <View key={index} style={styles.card}>
+          {recipe.image ? (
+            <Image source={{ uri: recipe.image }} style={styles.image} />
+          ) : null}
+
+          <Text style={styles.title}>{recipe.title}</Text>
+          <Text style={styles.description}>
+            {recipe.description?.substring(0, 80) || ""}
+          </Text>
+
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.editBtn} onPress={() => editRecipe(recipe, index)}>
+              <Text style={styles.btnText}>Edit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteRecipe(index)}>
+              <Text style={styles.btnText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      ) : (
-        <ScrollView>
-          {recipes.map((recipe, index) => (
-            <View key={index} style={styles.recipeCard}>
-              <TouchableOpacity
-                testID="handlerecipeBtn"
-                onPress={() => handlerecipeClick(recipe)}
-                style={styles.imageWrapper}
-              >
-                {recipe.image ? (
-                  <Image
-                    source={{ uri: recipe.image }}
-                    style={styles.recipeImage}
-                  />
-                ) : null}
-              </TouchableOpacity>
-
-              <View style={styles.recipeInfo}>
-                <Text style={styles.recipeTitle}>{recipe.title}</Text>
-                <Text testID="recipeDescp" style={styles.recipeDescription}>
-                  {recipe.description
-                    ? recipe.description.length > 50
-                      ? recipe.description.substring(0, 50) + "…"
-                      : recipe.description
-                    : ""}
-                </Text>
-
-                <View testID="editDeleteButtons" style={styles.actionButtons}>
-                  <TouchableOpacity
-                    style={styles.editButton}
-                    onPress={() => editrecipe(recipe, index)}
-                  >
-                    <Text style={styles.buttonText}>Edit</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-  style={styles.deleteButton}
-  onPress={() => {
-    console.log("Delete button pressed");
-    deleterecipe(index);
-  }}
->
-  <Text style={styles.buttonText}>Delete</Text>
-</TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      )}
-    </View>
+      ))}
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingHorizontal: wp("5%"),
-    paddingTop: hp("2%"),
-    backgroundColor: "#fff",
+    padding: 16,
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: hp("2%"),
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-  },
   addButton: {
     backgroundColor: "#3498db",
-    paddingVertical: hp("1%"),
-    paddingHorizontal: wp("4%"),
+    padding: 12,
     borderRadius: 6,
+    alignItems: "center",
+    marginBottom: 16,
   },
   addButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontWeight: "bold",
   },
-  recipeCard: {
-    flexDirection: "row",
-    marginBottom: hp("2%"),
-    backgroundColor: "#f9f9f9",
+  card: {
+    backgroundColor: "#f2f2f2",
     borderRadius: 10,
-    overflow: "hidden",
+    padding: 12,
+    marginBottom: 16,
   },
-  imageWrapper: {
-    width: wp("30%"),
-    height: hp("15%"),
-  },
-  recipeImage: {
+  image: {
     width: "100%",
-    height: "100%",
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
+    height: 150,
+    borderRadius: 6,
+    marginBottom: 8,
   },
-  recipeInfo: {
-    flex: 1,
-    padding: wp("3%"),
-    justifyContent: "space-between",
-  },
-  recipeTitle: {
-    fontSize: 20,
+  title: {
+    fontSize: 18,
     fontWeight: "600",
   },
-  recipeDescription: {
-    fontSize: 14,
+  description: {
+    marginTop: 4,
     color: "#666",
-    marginVertical: hp("0.5%"),
   },
-  actionButtons: {
+  buttonRow: {
     flexDirection: "row",
-    //justifyContent: "flex-end",
-    //npnmgap: wp("3%"),
+    justifyContent: "flex-end",
+    marginTop: 10,
   },
-  editButton: {
+  editBtn: {
     backgroundColor: "#2980b9",
-    paddingVertical: hp("0.5%"),
-    paddingHorizontal: wp("3%"),
-    borderRadius: 5,
+    padding: 8,
+    borderRadius: 4,
+    marginRight: 8,
   },
-  deleteButton: {
+  deleteBtn: {
     backgroundColor: "#c0392b",
-    paddingVertical: hp("0.5%"),
-    paddingHorizontal: wp("3%"),
-    borderRadius: 5,
+    padding: 8,
+    borderRadius: 4,
   },
-  buttonText: {
+  btnText: {
     color: "#fff",
     fontSize: 14,
   },
