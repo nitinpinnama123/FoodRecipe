@@ -91,7 +91,7 @@ import {
               <View key={index} style={styles.ingredientItem}>
                 <View style={styles.ingredientBullet} />
                 <Text style={styles.ingredientText}>
-                  {item.name} - {item.measurement}
+                  {item.ingredientName} - {item.measure}
                 </Text>
               </View>
             ))}
