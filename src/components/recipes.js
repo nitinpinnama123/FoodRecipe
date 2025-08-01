@@ -32,7 +32,7 @@ const ArticleCard = ({ item, index, navigation }) => {
       testID="articleDisplay"
     >
     <TouchableOpacity
-        onPress={() => navigation.navigate("RecipeDetailScreen", { recipe: item })}
+        onPress={() => navigation.navigate("RecipeDetail", item)}
       >
         <Image source={{ uri: item.recipeImage }} style={[styles.articleImage, { height: hp(20) }]} />
         <Text style={styles.articleText}>{item.recipeName}</Text>
