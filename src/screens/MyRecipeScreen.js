@@ -63,32 +63,12 @@ const MyRecipeScreen = () => {
 
   // Delete recipe from list and AsyncStorage
   const deleterecipe = async (index) => {
-    try {
-      Alert.alert(
-        "Delete Recipe",
-        "Are you sure you want to delete this recipe?",
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: async () => {
-              const updatedrecipes = [...recipes];
-              updatedrecipes.splice(index, 1);
-              await AsyncStorage.setItem(
-                "customrecipes",
-                JSON.stringify(updatedrecipes)
-              );
-              setrecipes(updatedrecipes);
-            },
-          },
-        ]
-      );
-    } catch (error) {
-      console.error("Error deleting recipe:", error);
+    const confirmed = true; // Simulate confirmation
+    if (confirmed) {
+      const updatedrecipes = [...recipes];
+      updatedrecipes.splice(index, 1);
+      await AsyncStorage.setItem("customrecipes", JSON.stringify(updatedrecipes));
+      setrecipes(updatedrecipes);
     }
   };
 
@@ -150,11 +130,14 @@ const MyRecipeScreen = () => {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() => deleterecipe(index)}
-                  >
-                    <Text style={styles.buttonText}>Delete</Text>
-                  </TouchableOpacity>
+  style={styles.deleteButton}
+  onPress={() => {
+    console.log("Delete button pressed");
+    deleterecipe(index);
+  }}
+>
+  <Text style={styles.buttonText}>Delete</Text>
+</TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -230,8 +213,8 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: wp("3%"),
+    //justifyContent: "flex-end",
+    //npnmgap: wp("3%"),
   },
   editButton: {
     backgroundColor: "#2980b9",
