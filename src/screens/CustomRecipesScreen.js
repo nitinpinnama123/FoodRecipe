@@ -1,150 +1,150 @@
+import React from "react";
 import {
-    View,
-    Text,
-    ScrollView,
-    Image,
-    StyleSheet,
-    TouchableOpacity,
-  } from "react-native";
-  import React from "react";
-  import { useNavigation, useRoute } from "@react-navigation/native";
-  import {
-    widthPercentageToDP as wp,
-    heightPercentageToDP as hp,
-  } from "react-native-responsive-screen";
-  import { useDispatch, useSelector } from "react-redux";
-  import { toggleFavorite } from "../redux/favoritesSlice";
-  
-  export default function CustomRecipesScreen() {
-    const navigation = useNavigation();
-    const dispatch = useDispatch();
-  
-    const route = useRoute();
-    const { recipe } = route.params || {}; // Pass the  object as a parameter
-    console.log('recipe',recipe);
-    
-    const favoriteRecipe = useSelector(
-      (state) => state.favorites.favoriterecipes
-    );
-    console.log('favoriteRecipe from custom',favoriteRecipe);
-    
-    const isFavourite = favoriteRecipe.includes(recipe.idCategory); // Adjust this according to your recipe structure
-  
-    if (!recipe) {
-      return (
-        <View style={styles.container}>
-          <Text style={styles.title}>No Recipe Details Available</Text>
-        </View>
-      );
+  View,
+  Text,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleFavorite } from "../redux/favoritesSlice"; // adjust path accordingly
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+
+const CustomRecipesScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const dispatch = useDispatch();
+
+  const recipe = route.params?.recipe;
+
+  // Redux: get favorite recipes array from state
+  const favoriteRecipes = useSelector(
+    (state) => state.favorites.favoriteRecipes || []
+  );
+
+  // Check if current recipe is favorited by its idCategory
+  const isFavorite = recipe ? favoriteRecipes.includes(recipe.idCategory) : false;
+
+  const handleToggleFavorite = () => {
+    if (recipe) {
+      dispatch(toggleFavorite(recipe.idCategory));
     }
-  
-    const handleToggleFavorite = () => {
-      dispatch(toggleFavorite(recipe)); // Adjust the action to handle recipe
-    };
-  
+  };
+
+  if (!recipe) {
     return (
-      <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent} testID="scrollContent"
-      >
-        {/* Recipe Image */}
-        <View style={styles.imageContainer} testID="imageContainer">
-        {recipe.image && (
-            <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
-          )}
-        </View>
-        <View
-          style={styles.topButtonsContainer} testID="topButtonsContainer"
-        >
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <Text>Back</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleToggleFavorite}
-            style={styles.favoriteButton}
-          >
-            <Text>{isFavourite ? "♥" : "♡"}</Text>
-          </TouchableOpacity>
-        </View>
-  
-        {/* Recipe Details */}
-        <View style={styles.contentContainer} testID="contentContainer">
-        <Text style={styles.recipeTitle}>{recipe.title}</Text>
-  <View style={styles.sectionContainer}>
-    <Text style={styles.sectionTitle}>Content</Text>
-    <Text style={styles.contentText}>{recipe.description}</Text>
-  </View>
-        </View>
-      </ScrollView>
+      <View style={styles.centered}>
+        <Text>No Recipe Details Available</Text>
+      </View>
     );
   }
-  
-  const styles = StyleSheet.create({
-    container: {
-      backgroundColor: "white",
-      flex: 1,
-    },
-    scrollContent: {
-      paddingBottom: 30,
-    },
-    imageContainer: {
-      flexDirection: "row",
-      justifyContent: "center",
-    },
-    recipeImage: {
-      width: wp(98),
-      height: hp(50),
-      borderRadius: 35,
-      borderBottomLeftRadius: 40,
-      borderBottomRightRadius: 40,
-      marginTop: 4,
-    },
-    contentContainer: {
-      paddingHorizontal: wp(4),
-      paddingTop: hp(4),
-    },
-    recipeTitle: {
-      fontSize: hp(3),
-      fontWeight: "bold",
-      color: "#4B5563",
-      marginBottom: hp(2),
-    },
-    sectionContainer: {
-      marginBottom: hp(2),
-    },
-    sectionTitle: {
-      fontSize: hp(2.5),
-      fontWeight: "bold",
-      color: "#4B5563",
-      marginBottom: hp(1),
-    },
-    topButtonsContainer: {
-      width: "100%",
-      position: "absolute",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingTop: hp(4),
-    },
-    backButton: {
-      padding: 8,
-      borderRadius: 50,
-      marginLeft: wp(5),
-      backgroundColor: "white",
-    },
-    favoriteButton: {
-      padding: 8,
-      borderRadius: 50,
-      marginRight: wp(5),
-      backgroundColor: "white",
-    },
-    contentText: {
-      fontSize: hp(1.6),
-      color: "#4B5563",
-    },
-  });
-  
+
+  // Using recipe.idCategory as "index" for height logic
+  const index = parseInt(recipe.idCategory, 10) || 0;
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Image Container */}
+      <View testID="imageContainer">
+        <Image
+          source={{ uri: recipe.image }}
+          style={[
+            styles.articleImage,
+            { height: index % 3 === 0 ? hp(25) : hp(35) },
+          ]}
+          resizeMode="cover"
+        />
+      </View>
+
+      {/* Top Buttons Container */}
+      <View style={styles.topButtonsContainer} testID="topButtonsContainer">
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.buttonText}>GoBack</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={handleToggleFavorite}
+        >
+          <Text style={styles.buttonText}>{isFavorite ? "♥" : "♡"}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Content Container */}
+      <View testID="contentContainer" style={styles.contentContainer}>
+        <Text style={styles.title}>{recipe.title}</Text>
+        <View>
+          <Text style={styles.contentLabel}>Content</Text>
+          <Text style={styles.description}>{recipe.description}</Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: wp("5%"),
+    paddingVertical: hp("2%"),
+    backgroundColor: "#fff",
+  },
+  articleImage: {
+    width: wp("90%"),
+    alignSelf: "center",
+    borderRadius: 10,
+    marginBottom: hp("2%"),
+  },
+  topButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: hp("2%"),
+  },
+  backButton: {
+    backgroundColor: "#3498db",
+    paddingVertical: hp("1%"),
+    paddingHorizontal: wp("5%"),
+    borderRadius: 5,
+  },
+  favoriteButton: {
+    backgroundColor: "#e74c3c",
+    paddingVertical: hp("1%"),
+    paddingHorizontal: wp("5%"),
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+  },
+  contentContainer: {
+    paddingTop: hp("1%"),
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: hp("1%"),
+  },
+  contentLabel: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: hp("0.5%"),
+  },
+  description: {
+    fontSize: 16,
+    color: "#555",
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
+
+export default CustomRecipesScreen;
