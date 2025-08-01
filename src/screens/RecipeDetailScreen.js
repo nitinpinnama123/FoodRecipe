@@ -33,61 +33,69 @@ export default function RecipeDetailScreen(props) {
     >
       {/* recipe Image */}
       <View style={styles.imageContainer} testID="imageContainer">
-     
+        <Image
+            source={{ uri: recipe.recipeImage }}
+            style={styles.recipeImage}
+        />
       </View>
 
       {/* Back Button and Favorite Button */}
       <View style={styles.topButtonsContainer}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Text>Back</Text>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.buttonText}>← Back</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleToggleFavorite}
-          style={[
-            styles.favoriteButton,
-            {
-              backgroundColor: "white",
-            },
-          ]}
-        >
-          <Text>{isFavourite ? "♥" : "♡"}</Text>
+        <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
+          <Text style={styles.buttonText}>
+            {isFavourite ? "❤️" : "🤍"}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* recipe Description */}
-  
-        <View style={styles.contentContainer}>
-          {/* Title and Category */}
-          <View
-            style={styles.recipeDetailsContainer}
-            testID="recipeDetailsContainer"
-          >
-            <Text style={styles.recipeTitle} testID="recipeTitle">
-         
-              
-              </Text>
-            <Text style={styles.recipeCategory} testID="recipeCategory">
-              </Text>
-          </View>
-          <View style={styles.miscContainer} testID="miscContainer">
-        
-      </View>
-
-      {/* Ingredients */}
-      <View style={styles.sectionContainer}>
      
-      </View>
+      {/* recipe Description */}
+    <View testID="recipeTitle">
+        <Text style={styles.mealName}>{recipe.recipeName}</Text>
+    </View>
+        
+      
+
+    <View testID="recipeCategory">
+        <Text style={styles.mealCategory}>{recipe.recipeCategory}</Text>
+    </View>
+
+      <View testID="miscContainer" style={styles.miscContainer}>
+  <View style={styles.miscItem}>
+    <Text style={styles.miscIcon}>⏰</Text>
+    <Text style={styles.miscText}>{recipe.recipeTime} mins</Text>
+  </View>
+  <View style={styles.miscItem}>
+    <Text style={styles.miscIcon}>🍽️</Text>
+    <Text style={styles.miscText}>{recipe.recipeServings} servings</Text>
+  </View>
+  <View style={styles.miscItem}>
+    <Text style={styles.miscIcon}>🔥</Text>
+    <Text style={styles.miscText}>{recipe.recipeCalories} cal</Text>
+  </View>
+  <View style={styles.miscItem}>
+    <Text style={styles.miscIcon}>🍴</Text>
+    <Text style={styles.miscText}>{recipe.recipeType}</Text>
+  </View>
+</View>
+       
+      {/* Ingredients */}
+      
+      <View testID="sectionContainer" style={styles.sectionContainer}>
+  <Text style={styles.sectionTitle}>Instructions</Text>
+  <Text style={styles.instructionsText}>{recipe.recipeInstructions}</Text>
+</View>
+       
 
       {/* Instructions */}
-      <View style={styles.sectionContainer} testID="sectionContainer">
-        
-        </View>
+      
           {/* Description */}
          
-        </View>
+
+    
     </ScrollView>
   );
 }
